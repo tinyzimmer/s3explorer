@@ -37,10 +37,6 @@ const (
 	EXIT_FAILED_AWS_CONNECT    = 3
 	EXIT_FAILED_BUCKET_LISTING = 4
 
-	// Type assignments
-	OBJECT_DIRECTORY_TYPE = 1
-	OBJECT_FILE_TYPE      = 2
-
 	// UI Options
 	RIGHT_BUFFER = 10
 
