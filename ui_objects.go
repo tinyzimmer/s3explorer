@@ -134,7 +134,7 @@ func CreateDirectoryList(title string, nodes []*Node, selection int) *termui.Lis
 		var display string
 		if !node.Info.IsDir {
 			file, space := TruncateFilename(node.DisplayString)
-			display = fmt.Sprintf("%s%s%v", file, strings.Repeat(" ", space), *node.S3Object.Size)
+			display = fmt.Sprintf("%s%s%v", file, strings.Repeat(" ", space), ByteFormat(float64(*node.S3Object.Size), 1))
 		} else {
 			display = node.DisplayString
 		}
