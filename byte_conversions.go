@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math"
 	"strconv"
 )
@@ -15,6 +16,8 @@ func RoundUp(input float64, places int) (newVal float64) {
 }
 
 func ByteFormat(inputNum float64, precision int) string {
+
+	log.Printf("Formatting input %v to human readable with precision %v\n", inputNum, precision)
 
 	if precision <= 0 {
 		precision = 1
