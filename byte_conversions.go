@@ -49,7 +49,7 @@ func ByteFormat(inputNum float64, precision int) string {
 		unit = " KB" // kilobyte
 	} else {
 		returnVal = inputNum
-		unit = " bytes" // byte
+		unit = " B" // byte
 	}
 
 	return strconv.FormatFloat(returnVal, 'f', precision, 64) + unit
