@@ -28,6 +28,8 @@ import (
 )
 
 const (
+	VERSION = "v0.1"
+
 	// Dump logs to /dev/null by default
 	DEFAULT_LOG_FILE = os.DevNull
 
@@ -54,12 +56,23 @@ var (
 	localDelimiter    string
 	logFile           string
 	currentWorkingDir string
+	versionDump       bool
 )
+
+func dumpVersion() {
+	fmt.Printf("s3explorer version: %s\n", VERSION)
+	os.Exit(EXIT_USER_REQUESTED)
+}
 
 func init() {
 
 	flag.StringVar(&logFile, "d", DEFAULT_LOG_FILE, "Path to write debug logs")
+	flag.BoolVar(&versionDump, "v", false, "Print version and exit")
 	flag.Parse()
+
+	if versionDump {
+		dumpVersion()
+	}
 
 	var err error
 	var logWriter io.Writer
