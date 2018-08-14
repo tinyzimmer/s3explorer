@@ -20,6 +20,7 @@ package main
 import (
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/gizak/termui"
@@ -84,7 +85,7 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 
 			log.Printf("File Selected: %s\n", nodes[selection].DisplayString)
 
-			dest := filepath.Join(currentWorkingDir, *nodes[selection].S3Object.Key)
+			dest := filepath.Join(currentWorkingDir, path.Base(*nodes[selection].S3Object.Key))
 			p := CreateDownloadPrompt(nodes[selection], dest)
 			termui.Render(p)
 			sess, err := InitSession(bucket.region)

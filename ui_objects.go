@@ -19,7 +19,6 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -62,7 +61,7 @@ func RenderError(errorMessage string) {
 }
 
 func CreateDownloadPrompt(node *Node, dest string) (p *termui.Par) {
-	msg := fmt.Sprintf("Downloading to %s", filepath.Join(dest, *node.S3Object.Key))
+	msg := fmt.Sprintf("Downloading to %s", dest)
 	p = termui.NewPar(msg)
 	p.Height = 5
 	p.Width = termui.TermWidth() - RIGHT_BUFFER
