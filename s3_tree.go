@@ -107,7 +107,12 @@ func NewTree(objects []*s3.Object, root string) (result *Node, err error) {
 			return err
 		}
 		cInfo, display := fileInfoFromInterface(info)
-		objectMatch := MatchS3Object(objects, root, path)
+		var objectMatch *s3.Object
+		if len(objects) > 0 {
+			objectMatch = MatchS3Object(objects, root, path)
+		} else {
+			objectMatch = nil
+		}
 		parents[path] = &Node{
 			FullPath:      path,
 			DisplayString: display,

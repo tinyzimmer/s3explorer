@@ -88,7 +88,7 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 			log.Printf("File Selected: %s\n", nodes[selection].DisplayString)
 
 			dest := filepath.Join(currentWorkingDir, path.Base(*nodes[selection].S3Object.Key))
-			p := CreateDownloadPrompt(nodes[selection], dest)
+			p := CreateDownloadPrompt(dest)
 			termui.Render(p)
 			sess, err := InitSession(bucket.region)
 			if err != nil {
@@ -96,7 +96,14 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 				RenderError(err.Error())
 				return
 			}
-			sess.DownloadObject(bucket, nodes[selection], dest)
+			err = sess.DownloadObject(bucket, nodes[selection], dest)
+			if err != nil {
+				log.Println(err)
+				RenderError(err.Error())
+			} else {
+				p := CreateFinishedDownloadPrompt(dest)
+				termui.Render(p)
+			}
 		}
 
 	})

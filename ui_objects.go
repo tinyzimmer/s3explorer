@@ -94,8 +94,19 @@ func RenderError(errorMessage string) {
 	time.Sleep(time.Duration(time.Second * 2))
 }
 
-func CreateDownloadPrompt(node *Node, dest string) (p *termui.Par) {
+func CreateDownloadPrompt(dest string) (p *termui.Par) {
 	msg := fmt.Sprintf("Downloading to %s", dest)
+	p = termui.NewPar(msg)
+	p.Height = 5
+	p.Width = termui.TermWidth() - RIGHT_BUFFER
+	p.TextFgColor = termui.ColorWhite
+	p.Border = false
+	p.Y = termui.TermHeight() - 10
+	return
+}
+
+func CreateFinishedDownloadPrompt(dest string) (p *termui.Par) {
+	msg := fmt.Sprintf("File Downloaded: %s", dest)
 	p = termui.NewPar(msg)
 	p.Height = 5
 	p.Width = termui.TermWidth() - RIGHT_BUFFER
@@ -159,8 +170,10 @@ func GetDirectoryDisplayListing(objects []string, selection int) (listing []stri
 		return
 	}
 
-	if maxHeight <= (selection+2) && (selection+2) <= len(listing) {
-		listing = listing[(selection - 2):]
+	if len(listing) > 0 {
+		if maxHeight <= (selection + 2) {
+			listing = listing[(selection - 2):]
+		}
 	}
 	return
 }
