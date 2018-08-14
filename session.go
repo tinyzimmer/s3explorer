@@ -111,12 +111,8 @@ func (s S3Session) GetBucketObjects(bucket BucketWithDisplay) (objects []*s3.Obj
 
 	// For a given bucket, retrieve a list of all its objects
 
-	sess, err := InitSession(bucket.region)
-	if err != nil {
-		return
-	}
 	log.Printf("Listing Objects for Bucket: %s\n", bucket.displayString)
-	err = sess.S3Service.ListObjectsV2Pages(&s3.ListObjectsV2Input{
+	err = s.S3Service.ListObjectsV2Pages(&s3.ListObjectsV2Input{
 		Bucket: bucket.bucket.Name,
 	},
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {

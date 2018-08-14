@@ -137,9 +137,17 @@ func RenderBucketExplorer(bucket BucketWithDisplay) {
 	var selection int
 	selection = 0
 
+	// get AWS session in region of bucket
+
+	sess, err := InitSession(bucket.region)
+	if err != nil {
+		log.Println(err)
+		os.Exit(EXIT_FAILED_AWS_CONNECT)
+	}
+
 	// retrieve all objects for bucket
 
-	objects, err := s3Session.GetBucketObjects(bucket)
+	objects, err := sess.GetBucketObjects(bucket)
 	if err != nil {
 		ReloadMainBucketsWithError(err)
 		return
