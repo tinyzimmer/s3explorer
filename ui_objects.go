@@ -20,6 +20,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -28,6 +29,7 @@ import (
 
 func HaveTermSpace(maxHeight int) bool {
 	if maxHeight < 2 {
+		log.Println("Warning: Terminal height is too small!")
 		return false
 	}
 	return true
@@ -153,6 +155,7 @@ func GetDirectoryDisplayListing(objects []string, selection int) (listing []stri
 
 	if !HaveTermSpace(maxHeight) {
 		err = errors.New("Please expand the height of your terminal")
+		log.Println(err)
 		return
 	}
 
