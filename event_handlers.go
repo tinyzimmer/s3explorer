@@ -18,6 +18,7 @@ along with s3explorer.  If not, see <https://www.gnu.org/licenses/>.
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -41,6 +42,7 @@ func SetExitHandler(exitFunc func()) {
 		exitFunc()
 		log.Println("Stopping Event loop")
 		termui.StopLoop()
+		fmt.Println()
 		os.Exit(EXIT_USER_REQUESTED)
 	})
 }
