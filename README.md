@@ -1,6 +1,18 @@
 # s3explorer
 Terminal Based S3 File Explorer
 
+### Download
+
+There are pre-compiled binaries in the [releases](https://github.com/tinyzimmer/s3explorer/releases) section.
+
+#### AWS Credentials
+
+   - Refer to the AWS documentation to configure your credentials. 
+   `s3explorer` loads credentials in the following order:
+     - Environment credentials
+     - Shared credentials file (e.g. `$HOME/.aws/credentials`)
+     - EC2 Instance Profile
+
 ### Building From Source
 
 
@@ -22,4 +34,4 @@ $> go install github.com/tinyzimmer/s3explorer
 $> s3explorer <-d [debug file]>
 ```
 
-The program will list all of the S3 Buckets you have access to and present them in a file explorer format. You can descend into the buckets and directories therein with your keyboard. 
+The program will list all of the S3 Buckets you have access to and present them in a file explorer format. You can descend into the buckets and directories therein with your keyboard.
