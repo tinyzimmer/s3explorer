@@ -36,8 +36,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-type RegionResponse struct{}
-
 type S3Session struct {
 	S3Service      *s3.S3
 	ConfigProvider *client.ConfigProvider
