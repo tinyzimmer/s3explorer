@@ -46,6 +46,7 @@ const (
 
 	// UI Options
 	RIGHT_BUFFER = 10
+	LOWER_BUFFER = 10
 
 	// AWS Options
 	DEFAULT_REGION = "us-west-2"

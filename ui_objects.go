@@ -25,6 +25,22 @@ import (
 	"github.com/gizak/termui"
 )
 
+func GetNodeListHeight(objects []*Node) int {
+	max := termui.TermHeight() - LOWER_BUFFER
+	if (len(objects) + 2) < max {
+		return (len(objects) + 2)
+	}
+	return max
+}
+
+func GetBucketListHeight(objects []BucketWithDisplay) int {
+	max := termui.TermHeight() - LOWER_BUFFER
+	if (len(objects) + 2) < max {
+		return (len(objects) + 2)
+	}
+	return max
+}
+
 func RenderHelp() (p *termui.Par) {
 	arrows := "\u2195\ufe0f"
 	returnArrow := "\u21b2"
@@ -97,7 +113,7 @@ func CreateBucketList(buckets []BucketWithDisplay, selection int) *termui.List {
 	ls.Items = GetBucketListing(buckets, selection)
 	ls.ItemFgColor = termui.ColorYellow
 	ls.BorderLabel = "S3 Buckets"
-	ls.Height = (len(buckets) + 2)
+	ls.Height = GetBucketListHeight(buckets)
 	ls.Width = termui.TermWidth() - RIGHT_BUFFER
 	ls.Y = 0
 	return ls
@@ -146,7 +162,7 @@ func CreateDirectoryList(title string, nodes []*Node, selection int) *termui.Lis
 	ls.Items = GetDirectoryDisplayListing(displayStrings, selection)
 	ls.ItemFgColor = termui.ColorYellow
 	ls.BorderLabel = title
-	ls.Height = (len(nodes) + 2)
+	ls.Height = GetNodeListHeight(nodes)
 	ls.Width = termui.TermWidth() - RIGHT_BUFFER
 	ls.Y = 0
 	return ls
