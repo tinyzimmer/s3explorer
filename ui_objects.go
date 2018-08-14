@@ -25,18 +25,26 @@ import (
 	"github.com/gizak/termui"
 )
 
-func GetNodeListHeight(objects []*Node) int {
+func GetNodeListHeight(nodes []*Node) int {
 	max := termui.TermHeight() - LOWER_BUFFER
-	if (len(objects) + 2) < max {
-		return (len(objects) + 2)
+	if (len(nodes) + 2) < max {
+		return (len(nodes) + 2)
 	}
 	return max
 }
 
-func GetBucketListHeight(objects []BucketWithDisplay) int {
+func GetBucketListHeight(buckets []BucketWithDisplay) int {
 	max := termui.TermHeight() - LOWER_BUFFER
-	if (len(objects) + 2) < max {
-		return (len(objects) + 2)
+	if (len(buckets) + 2) < max {
+		return (len(buckets) + 2)
+	}
+	return max
+}
+
+func GetStringListHeight(strings []string) int {
+	max := termui.TermHeight() - LOWER_BUFFER
+	if (len(strings) + 2) < max {
+		return (len(strings) + 2)
 	}
 	return max
 }
@@ -98,6 +106,12 @@ func GetBucketListing(buckets []BucketWithDisplay, selection int) (listing []str
 		}
 		index += 1
 	}
+
+	maxHeight := GetBucketListHeight(buckets)
+	if maxHeight <= (selection + 2) {
+		listing = listing[(selection - 2):]
+	}
+
 	return
 }
 
@@ -140,6 +154,12 @@ func GetDirectoryDisplayListing(objects []string, selection int) (listing []stri
 		}
 		index += 1
 	}
+
+	maxHeight := GetStringListHeight(objects)
+	if maxHeight <= (selection + 2) {
+		listing = listing[(selection - 2):]
+	}
+
 	return
 }
 
