@@ -1,0 +1,23 @@
+language: go
+
+go:
+  - 1.10.x
+
+before_install:
+  - go get -t ./...
+
+install:
+  - go get github.com/mitchellh/gox
+
+script:
+  - gox -os="linux windows" -arch="amd64" -output="./build/{{.Dir}}-{{.OS}}-{{.Arch}}"
+  - gox -os="darwin" -arch="amd64" -output="./build/{{.Dir}}-macOS-{{.Arch}}"
+  
+deploy:
+  - provider: releases
+    file_glob: true
+    skip_cleanup: true
+    api_key: "${GITHUB_TOKEN}"
+    file: "./build/*"
+    on:
+      tags: true
