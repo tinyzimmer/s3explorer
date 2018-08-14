@@ -20,6 +20,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gizak/termui"
 )
@@ -67,13 +68,13 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 					deferFunc()
 					ReloadMainBuckets()
 				} else {
-					log.Printf("Going back to directory: %+v\n", nodes[0].Parent)
+					log.Printf("Going back to directory: %+v\n", nodes[0].Parent.DisplayString)
 					listing := GetNodeDirectory(nodes[0].Parent)
 					RenderBucketExplorerListing(bucket, listing, 0, deferFunc)
 				}
 			})
 
-			log.Printf("Descending into node: %+v\n", nodes[selection])
+			log.Printf("Descending into node: %+v\n", nodes[selection].DisplayString)
 			listing := GetNodeDirectory(nodes[selection])
 			RenderBucketExplorerListing(bucket, listing, 0, deferFunc)
 
@@ -83,9 +84,16 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 
 			log.Printf("File Selected: %s\n", nodes[selection].DisplayString)
 
-			p := CreateDownloadPrompt(nodes[selection])
+			dest := filepath.Join(currentWorkingDir, *nodes[selection].S3Object.Key)
+			p := CreateDownloadPrompt(nodes[selection], dest)
 			termui.Render(p)
-
+			sess, err := InitSession(bucket.region)
+			if err != nil {
+				log.Println(err)
+				RenderError(err.Error())
+				return
+			}
+			sess.DownloadObject(bucket, nodes[selection], dest)
 		}
 
 	})

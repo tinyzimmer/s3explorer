@@ -28,7 +28,12 @@ import (
 )
 
 const (
+	// Dump logs to /dev/null by default
 	DEFAULT_LOG_FILE = os.DevNull
+
+	// FS Options
+	DEFAULT_DIRECTORY_MODE = 0755
+	DEFAULT_FILE_MODE      = 0644
 
 	// Exit Codes
 	EXIT_USER_REQUESTED        = 0
@@ -59,7 +64,7 @@ func init() {
 	var err error
 	var logWriter io.Writer
 
-	if _, err = os.Stat(logFile); err == nil {
+	if FileExists(logFile) {
 		os.Remove(logFile)
 		logWriter, err = os.Create(logFile)
 		if err != nil {

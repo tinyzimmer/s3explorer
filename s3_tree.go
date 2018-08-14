@@ -67,7 +67,7 @@ func CreateMockFs(objects []*s3.Object) (tempDir string, err error) {
 		dir, file := path.Split(*obj.Key)
 		sanitizedDir := strings.Replace(dir, "/", localDelimiter, -1)
 		if len(dir) > 0 {
-			err := os.MkdirAll(path.Join(tempDir, sanitizedDir), 0700)
+			err := os.MkdirAll(path.Join(tempDir, sanitizedDir), DEFAULT_DIRECTORY_MODE)
 			if err != nil {
 				log.Printf("Error: %s\n", err.Error())
 			}

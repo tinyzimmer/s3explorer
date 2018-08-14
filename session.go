@@ -19,8 +19,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -45,6 +48,58 @@ type BucketWithDisplay struct {
 	bucket        *s3.Bucket
 	displayString string
 	region        string
+}
+
+func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest string) (err error) {
+
+	log.Printf("\nDownload Call:\n\tBucket: %+v\n\tNode: %+v\n\tDestination: %s\n", bucket, node, dest)
+
+	// sanity check
+	if node.S3Object == nil {
+		err = errors.New(fmt.Sprintf("No s3 object associated with node: %+v\n", node))
+		log.Println(err)
+		return
+	}
+
+	// Check if dest already exists
+	if FileExists(dest) {
+		log.Println("Removing pre-existing file")
+		os.Remove(dest)
+	}
+
+	// Recursively create needed directories
+	path, _ := filepath.Split(dest)
+	log.Printf("Recursively creating directory: %s\n", path)
+	err = os.MkdirAll(path, DEFAULT_DIRECTORY_MODE)
+	if err != nil {
+		return
+	}
+
+	log.Printf("Creating destination path: %s\n", dest)
+	// Open a file
+	file, err := os.Create(dest)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	log.Printf("Getting downloader for region: %s\n", bucket.region)
+	// Create a downloader with the s3 client and custom options
+	downloader := s3manager.NewDownloaderWithClient(s.S3Service, func(d *s3manager.Downloader) {
+		d.PartSize = 64 * 1024 * 1024 // 64MB per part
+	})
+
+	n, err := downloader.Download(file, &s3.GetObjectInput{
+		Bucket: bucket.bucket.Name,
+		Key:    node.S3Object.Key,
+	})
+
+	if err != nil {
+		log.Printf("failed to download file: %v\n", err)
+	}
+
+	log.Printf("file downloaded, %d bytes\n", n)
+	return
 }
 
 func (s S3Session) GetBucketObjects(bucket BucketWithDisplay) (objects []*s3.Object, err error) {
