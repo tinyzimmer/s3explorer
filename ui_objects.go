@@ -18,12 +18,20 @@ along with s3explorer.  If not, see <https://www.gnu.org/licenses/>.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gizak/termui"
 )
+
+func HaveTermSpace(maxHeight int) bool {
+	if maxHeight < 2 {
+		return false
+	}
+	return true
+}
 
 func GetNodeListHeight(nodes []*Node) int {
 	max := termui.TermHeight() - LOWER_BUFFER
@@ -95,26 +103,6 @@ func CreateDownloadPrompt(node *Node, dest string) (p *termui.Par) {
 	return
 }
 
-func GetBucketListing(buckets []BucketWithDisplay, selection int) (listing []string) {
-	var index int
-	index = 0
-	for _, bucket := range buckets {
-		if index == selection {
-			listing = append(listing, fmt.Sprintf("[[%v] %s](bg-blue)", index, bucket.displayString))
-		} else {
-			listing = append(listing, fmt.Sprintf("[%v] %s", index, bucket.displayString))
-		}
-		index += 1
-	}
-
-	maxHeight := GetBucketListHeight(buckets)
-	if maxHeight <= (selection + 2) {
-		listing = listing[(selection - 2):]
-	}
-
-	return
-}
-
 func CreateBucketList(buckets []BucketWithDisplay, selection int) *termui.List {
 
 	var displayStrings []string
@@ -123,8 +111,14 @@ func CreateBucketList(buckets []BucketWithDisplay, selection int) *termui.List {
 		displayStrings = append(displayStrings, bucket.displayString)
 	}
 
+	listing, err := GetDirectoryDisplayListing(displayStrings, selection)
+	if err != nil {
+		RenderError(err.Error())
+		return &termui.List{}
+	}
+
 	ls := termui.NewList()
-	ls.Items = GetBucketListing(buckets, selection)
+	ls.Items = listing
 	ls.ItemFgColor = termui.ColorYellow
 	ls.BorderLabel = "S3 Buckets"
 	ls.Height = GetBucketListHeight(buckets)
@@ -143,7 +137,7 @@ func TruncateFilename(filename string) (truncated string, space int) {
 	return
 }
 
-func GetDirectoryDisplayListing(objects []string, selection int) (listing []string) {
+func GetDirectoryDisplayListing(objects []string, selection int) (listing []string, err error) {
 	var index int
 	index = 0
 	for _, obj := range objects {
@@ -156,10 +150,15 @@ func GetDirectoryDisplayListing(objects []string, selection int) (listing []stri
 	}
 
 	maxHeight := GetStringListHeight(objects)
-	if maxHeight <= (selection + 2) {
-		listing = listing[(selection - 2):]
+
+	if !HaveTermSpace(maxHeight) {
+		err = errors.New("Please expand the height of your terminal")
+		return
 	}
 
+	if maxHeight <= (selection+2) && (selection+2) <= len(listing) {
+		listing = listing[(selection - 2):]
+	}
 	return
 }
 
@@ -178,8 +177,14 @@ func CreateDirectoryList(title string, nodes []*Node, selection int) *termui.Lis
 		displayStrings = append(displayStrings, display)
 	}
 
+	listing, err := GetDirectoryDisplayListing(displayStrings, selection)
+	if err != nil {
+		RenderError(err.Error())
+		return &termui.List{}
+	}
+
 	ls := termui.NewList()
-	ls.Items = GetDirectoryDisplayListing(displayStrings, selection)
+	ls.Items = listing
 	ls.ItemFgColor = termui.ColorYellow
 	ls.BorderLabel = title
 	ls.Height = GetNodeListHeight(nodes)

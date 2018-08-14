@@ -40,6 +40,7 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 		} else {
 			selection -= 1
 			list := CreateDirectoryList(bucket.displayString, nodes, selection)
+			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})
@@ -50,6 +51,7 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 		} else {
 			selection += 1
 			list := CreateDirectoryList(bucket.displayString, nodes, selection)
+			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})
@@ -104,6 +106,7 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 func RenderBucketExplorer(bucket BucketWithDisplay) {
 
 	var selection int
+	selection = 0
 
 	objects, err := s3Session.GetBucketObjects(bucket)
 	if err != nil {
