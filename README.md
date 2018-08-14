@@ -28,6 +28,7 @@ $> go get github.com/gizak/termui
 $> go get github.com/tinyzimmer/s3explorer
 
 # From git or source code tarball
+# ensure dependencies as listed above
 $> git clone https://github.com/tinyzimmer/s3explorer # or download archive
 $> cd s3explorer
 $> go build .
