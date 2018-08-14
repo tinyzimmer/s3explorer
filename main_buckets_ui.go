@@ -43,7 +43,6 @@ func RenderBucketListing(buckets []BucketWithDisplay) {
 		} else {
 			selection -= 1
 			list := CreateBucketList(buckets, selection)
-			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})
@@ -56,7 +55,6 @@ func RenderBucketListing(buckets []BucketWithDisplay) {
 		} else {
 			selection += 1
 			list := CreateBucketList(buckets, selection)
-			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})

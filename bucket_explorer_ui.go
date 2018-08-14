@@ -46,7 +46,6 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 		} else {
 			selection -= 1
 			list := CreateDirectoryList(bucket.displayString, nodes, selection)
-			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})
@@ -59,7 +58,6 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 		} else {
 			selection += 1
 			list := CreateDirectoryList(bucket.displayString, nodes, selection)
-			termui.Clear()
 			termui.Render(list, RenderHelp())
 		}
 	})
