@@ -7,7 +7,7 @@ There are pre-compiled binaries in the [releases](https://github.com/tinyzimmer/
 
 #### AWS Credentials
 
-   - Refer to the AWS documentation to configure your credentials. 
+   - Refer to the AWS documentation to configure your credentials.
    `s3explorer` loads credentials in the following order:
      - Environment credentials
      - Shared credentials file (e.g. `$HOME/.aws/credentials`)
@@ -22,10 +22,15 @@ There are pre-compiled binaries in the [releases](https://github.com/tinyzimmer/
 
 
 ```bash
+# Using `go get`
 $> go get github.com/aws/aws-sdk-go
 $> go get github.com/gizak/termui
 $> go get github.com/tinyzimmer/s3explorer
-$> go install github.com/tinyzimmer/s3explorer
+
+# From git or source code tarball
+$> git clone https://github.com/tinyzimmer/s3explorer # or download archive
+$> cd s3explorer
+$> go build .
 ```
 
 ### Usage
