@@ -53,6 +53,7 @@ func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest str
 	log.Printf("\nDownload Call:\n\tBucket: %+v\n\tNode: %+v\n\tDestination: %s\n", bucket, node, dest)
 
 	// sanity check
+
 	if node.S3Object == nil {
 		err = errors.New(fmt.Sprintf("No s3 object associated with node: %+v\n", node))
 		log.Println(err)
@@ -60,12 +61,14 @@ func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest str
 	}
 
 	// Check if dest already exists
+
 	if FileExists(dest) {
 		log.Println("Removing pre-existing file")
 		os.Remove(dest)
 	}
 
 	// Recursively create needed directories
+
 	path, _ := filepath.Split(dest)
 	log.Printf("Recursively creating directory: %s\n", path)
 	err = os.MkdirAll(path, DEFAULT_DIRECTORY_MODE)
@@ -74,7 +77,9 @@ func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest str
 	}
 
 	log.Printf("Creating destination path: %s\n", dest)
+
 	// Open a file
+
 	file, err := os.Create(dest)
 	if err != nil {
 		return
@@ -82,7 +87,9 @@ func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest str
 	defer file.Close()
 
 	log.Printf("Getting downloader for region: %s\n", bucket.region)
+
 	// Create a downloader with the s3 client and custom options
+
 	downloader := s3manager.NewDownloaderWithClient(s.S3Service, func(d *s3manager.Downloader) {
 		d.PartSize = 64 * 1024 * 1024 // 64MB per part
 	})
@@ -101,6 +108,9 @@ func (s S3Session) DownloadObject(bucket BucketWithDisplay, node *Node, dest str
 }
 
 func (s S3Session) GetBucketObjects(bucket BucketWithDisplay) (objects []*s3.Object, err error) {
+
+	// For a given bucket, retrieve a list of all its objects
+
 	sess, err := InitSession(bucket.region)
 	if err != nil {
 		return
@@ -117,6 +127,9 @@ func (s S3Session) GetBucketObjects(bucket BucketWithDisplay) (objects []*s3.Obj
 }
 
 func (s S3Session) GetBucketWithDisplayStrings() (bucketStrings []BucketWithDisplay, err error) {
+
+	// Get all buckets, and attach a display string to it
+
 	buckets, err := s.GetBucketListing()
 	if err != nil {
 		return
@@ -137,6 +150,9 @@ func (s S3Session) GetBucketWithDisplayStrings() (bucketStrings []BucketWithDisp
 }
 
 func (s S3Session) GetBucketRegion(bucket *s3.Bucket) (region string, err error) {
+
+	// Get the region for a bucket
+
 	log.Printf("Retrieving region for bucket: %s\n", *bucket.Name)
 	ctx := context.Background()
 	region, err = s3manager.GetBucketRegionWithClient(ctx, s.S3Service, *bucket.Name)
@@ -151,6 +167,7 @@ func (s S3Session) GetBucketRegion(bucket *s3.Bucket) (region string, err error)
 }
 
 func (s S3Session) GetBucketListing() (buckets []*s3.Bucket, err error) {
+
 	log.Println("Listing Buckets")
 	resp, err := s.S3Service.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {

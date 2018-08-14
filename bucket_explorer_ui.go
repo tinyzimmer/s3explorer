@@ -28,11 +28,17 @@ import (
 
 func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, selection int, deferFunc func()) {
 
+	// Get a UI ready list depending on where the selection pointer is
+
 	list := CreateDirectoryList(bucket.displayString, nodes, selection)
 	termui.Clear()
 	termui.Render(list, RenderHelp())
 
+	// Set default handlers and defer tempdir removal
+
 	SetDefaultHandlers(deferFunc)
+
+	// Up key moves up
 
 	termui.Handle("/sys/kbd/<up>", func(termui.Event) {
 		if selection == 0 {
@@ -45,6 +51,8 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 		}
 	})
 
+	// Down key moves down
+
 	termui.Handle("/sys/kbd/<down>", func(termui.Event) {
 		if selection == len(nodes)-1 {
 			return
@@ -55,6 +63,8 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 			termui.Render(list, RenderHelp())
 		}
 	})
+
+	// Enter descends the directory or initiates a download for a file
 
 	termui.Handle("/sys/kbd/<enter>", func(termui.Event) {
 
@@ -77,6 +87,8 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 				}
 			})
 
+			// Call parent function for selected node
+
 			log.Printf("Descending into node: %+v\n", nodes[selection].DisplayString)
 			listing := GetNodeDirectory(nodes[selection])
 			RenderBucketExplorerListing(bucket, listing, 0, deferFunc)
@@ -87,15 +99,23 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 
 			log.Printf("File Selected: %s\n", nodes[selection].DisplayString)
 
+			// Current downloads default to working directory
+
 			dest := filepath.Join(currentWorkingDir, path.Base(*nodes[selection].S3Object.Key))
 			p := CreateDownloadPrompt(dest)
 			termui.Render(p)
+
+			// Create an AWS Session in the region of the bucket
+
 			sess, err := InitSession(bucket.region)
 			if err != nil {
 				log.Println(err)
 				RenderError(err.Error())
 				return
 			}
+
+			// Download the file
+
 			err = sess.DownloadObject(bucket, nodes[selection], dest)
 			if err != nil {
 				log.Println(err)
@@ -112,8 +132,12 @@ func RenderBucketExplorerListing(bucket BucketWithDisplay, nodes []*Node, select
 
 func RenderBucketExplorer(bucket BucketWithDisplay) {
 
+	// init selection pointer
+
 	var selection int
 	selection = 0
+
+	// retrieve all objects for bucket
 
 	objects, err := s3Session.GetBucketObjects(bucket)
 	if err != nil {
@@ -122,10 +146,14 @@ func RenderBucketExplorer(bucket BucketWithDisplay) {
 
 	}
 
+	// create a local mock filesystem for easier indexing
+
 	mockFsRoot, err := CreateMockFs(objects)
 	if err != nil {
 		ReloadMainBucketsWithError(err)
 	}
+
+	// Set clean function to pass to all default handlers
 
 	deferFunc := func() {
 		log.Printf("Cleaning Temp Directory: %s\n", mockFsRoot)
@@ -135,15 +163,21 @@ func RenderBucketExplorer(bucket BucketWithDisplay) {
 		}
 	}
 
+	// Evaluate the directory tree
+
 	tree, err := NewTree(objects, mockFsRoot)
 	if err != nil {
 		ReloadMainBucketsWithError(err)
 	}
 
+	// Get a listing for the root node
+
 	listing := GetNodeDirectory(tree)
 	if err != nil {
 		ReloadMainBucketsWithError(err)
 	}
+
+	// Render the bucket explorer
 
 	SetBackHandler(ReloadMainBuckets, deferFunc)
 	RenderBucketExplorerListing(bucket, listing, selection, deferFunc)

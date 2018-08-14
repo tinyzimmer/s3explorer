@@ -20,6 +20,9 @@ package main
 import "os"
 
 func FileExists(path string) bool {
+
+	// Return true if file exists on system
+
 	if _, err := os.Stat(logFile); err == nil {
 		return true
 	}

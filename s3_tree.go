@@ -58,14 +58,30 @@ type Node struct {
 }
 
 func CreateMockFs(objects []*s3.Object) (tempDir string, err error) {
+
+	// Get a temp directory using the system defaults
+
 	log.Println("Creating Mock filesystem for bucket indexing")
 	tempDir, err = ioutil.TempDir("", "")
 	if err != nil {
 		return
 	}
+
+	// iterate through the s3 objects
+
 	for _, obj := range objects {
+
+		// split per POSIX methods
+
 		dir, file := path.Split(*obj.Key)
+
+		// ensure local path delimiter is used
+
 		sanitizedDir := strings.Replace(dir, "/", localDelimiter, -1)
+
+		// If the length of the dir string is greater than zero,
+		// Recursively create the directories
+
 		if len(dir) > 0 {
 			err := os.MkdirAll(path.Join(tempDir, sanitizedDir), DEFAULT_DIRECTORY_MODE)
 			if err != nil {
@@ -73,6 +89,9 @@ func CreateMockFs(objects []*s3.Object) (tempDir string, err error) {
 			}
 		}
 		if len(file) > 0 {
+
+			// If we have a file, touch an empty file to represent the node
+
 			sysFile, err := os.Create(path.Join(tempDir, sanitizedDir, file))
 			if err != nil {
 				log.Printf("Error: %s\n", err.Error())
@@ -85,6 +104,9 @@ func CreateMockFs(objects []*s3.Object) (tempDir string, err error) {
 }
 
 func MatchS3Object(objects []*s3.Object, root string, path string) *s3.Object {
+
+	// find the local path string that coorelates with a remote s3 object
+
 	sanitized := strings.Replace(strings.Replace(path, root+localDelimiter, "", 1), localDelimiter, "/", -1)
 	for _, obj := range objects {
 		if *obj.Key == sanitized {
@@ -95,6 +117,7 @@ func MatchS3Object(objects []*s3.Object, root string, path string) *s3.Object {
 }
 
 // Create directory hierarchy.
+
 func NewTree(objects []*s3.Object, root string) (result *Node, err error) {
 	log.Printf("Creating node tree for bucket filesystem at: %s\n", root)
 	absRoot, err := filepath.Abs(root)
@@ -140,6 +163,9 @@ func NewTree(objects []*s3.Object, root string) (result *Node, err error) {
 }
 
 func GetLocalDelimiter() string {
+
+	// If windows return \ else return /
+
 	log.Println("Checking local delimiter")
 	if runtime.GOOS == "windows" {
 		return "\\"
@@ -149,6 +175,9 @@ func GetLocalDelimiter() string {
 }
 
 func GetSubdirs(node *Node) (nodes []*Node) {
+
+	// Get subdirs for a node
+
 	log.Printf("Getting subdirs for node: %+v\n", node)
 	for _, child := range node.Children {
 		if child.Info.IsDir {
@@ -159,6 +188,9 @@ func GetSubdirs(node *Node) (nodes []*Node) {
 }
 
 func GetFiles(node *Node) (nodes []*Node) {
+
+	// Get files for a node
+
 	log.Printf("Getting files for node: %+v\n", node)
 	for _, child := range node.Children {
 		if !child.Info.IsDir {
@@ -169,6 +201,9 @@ func GetFiles(node *Node) (nodes []*Node) {
 }
 
 func GetNodeDirectory(node *Node) (nodes []*Node) {
+
+	// Create a sorted list of nodes (subdirs, then files)
+
 	log.Printf("Creating node directory tree for node focus: %+v\n", node)
 	if node.Parent != nil {
 		nodes = append(nodes, &Node{

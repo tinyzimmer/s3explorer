@@ -23,8 +23,6 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/gizak/termui"
 )
 
 const (
@@ -38,11 +36,11 @@ const (
 	DEFAULT_FILE_MODE      = 0644
 
 	// Exit Codes
-	EXIT_USER_REQUESTED        = 0
-	EXIT_FAILED_NO_TERMINAL    = 1
-	EXIT_FAILED_NO_LOGGER      = 2
-	EXIT_FAILED_AWS_CONNECT    = 3
-	EXIT_FAILED_BUCKET_LISTING = 4
+	EXIT_USER_REQUESTED        = 0 // user exit
+	EXIT_FAILED_NO_TERMINAL    = 1 // termui.Init() failed
+	EXIT_FAILED_NO_LOGGER      = 2 // Unable to access log file or /dev/null
+	EXIT_FAILED_AWS_CONNECT    = 3 // Could not connect to AWS S3 API
+	EXIT_FAILED_BUCKET_LISTING = 4 // Could not get initial bucket listing
 
 	// UI Options
 	RIGHT_BUFFER              = 10
@@ -51,23 +49,28 @@ const (
 	MIN_TERM_HEIGHT_REQUIRED  = 15
 
 	// AWS Options
-	DEFAULT_REGION = "us-west-2"
+	DEFAULT_REGION = "us-west-2" // Used for root-level ListBuckets operations
 )
 
 var (
-	s3Session         S3Session
-	localDelimiter    string
-	logFile           string
-	currentWorkingDir string
-	versionDump       bool
+	s3Session         S3Session // initial s3 session
+	localDelimiter    string    // local filesystem path delimiter
+	logFile           string    // log file
+	currentWorkingDir string    // starting local working directory
+	versionDump       bool      // version dump
 )
 
 func dumpVersion() {
+
+	// Print the version and exit
+
 	fmt.Printf("s3explorer version: %s\n", VERSION)
 	os.Exit(EXIT_USER_REQUESTED)
 }
 
 func init() {
+
+	// Debug will print a chatty logfile
 
 	flag.StringVar(&logFile, "d", DEFAULT_LOG_FILE, "Path to write debug logs")
 	flag.BoolVar(&versionDump, "v", false, "Print version and exit")
@@ -80,22 +83,34 @@ func init() {
 	var err error
 	var logWriter io.Writer
 
-	if FileExists(logFile) {
+	if FileExists(logFile) && logFile != os.DevNull {
+
+		// Remove pre-existing log file if exists
+
 		os.Remove(logFile)
 		logWriter, err = os.Create(logFile)
 		if err != nil {
 			fmt.Printf("Error: Failed to create log file %s\n", logFile)
 			os.Exit(EXIT_FAILED_NO_LOGGER)
 		}
+
 	} else {
+
+		// Otherwise just open the log file
+
 		logWriter, err = os.Create(logFile)
 		if err != nil {
 			fmt.Printf("Error: Failed to create log file %s\n", logFile)
 			os.Exit(EXIT_FAILED_NO_LOGGER)
 		}
+
 	}
+
+	// Set the logger
 	log.SetOutput(logWriter)
 	log.Println("Started Debug Log")
+
+	// Get Current Working Directory if we can (we start here for saving files)
 
 	currentWorkingDir, err = os.Getwd()
 	if err != nil {
@@ -104,32 +119,26 @@ func init() {
 		log.Printf("Got current working directory: %s\n", currentWorkingDir)
 	}
 
+	// Create an initial s3 session for bucket listing
+	//		ListBuckets returns buckets for all regions
+
 	s3Session, err = InitSession(DEFAULT_REGION)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(EXIT_FAILED_AWS_CONNECT)
 	}
+
+	// Get the local delimiter.
+	// It's actually safe to use a POSIX path delimiter on Windows, but this feels safer
+
 	localDelimiter = GetLocalDelimiter()
 	log.Println("Finished init")
 }
 
 func main() {
-	RunUi()
-}
 
-func RunUi() {
-	err := termui.Init()
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(EXIT_FAILED_NO_TERMINAL)
-	}
-	defer termui.Close()
-	buckets, err := s3Session.GetBucketWithDisplayStrings()
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		os.Exit(EXIT_FAILED_BUCKET_LISTING)
-	}
-	SetDefaultHandlers(func() { return })
-	RenderBucketListing(buckets)
-	termui.Loop()
+	// Start the UI
+
+	RunUi()
+
 }

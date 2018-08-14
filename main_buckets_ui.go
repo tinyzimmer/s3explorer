@@ -25,10 +25,17 @@ import (
 
 func RenderBucketListing(buckets []BucketWithDisplay) {
 
+	// Set the selection pointer
+
 	var selection int
 	selection = 0
+
+	// Create a UI ready list and render
+
 	list := CreateBucketList(buckets, selection)
 	termui.Render(list, RenderHelp())
+
+	// up goes up
 
 	termui.Handle("/sys/kbd/<up>", func(termui.Event) {
 		if selection == 0 {
@@ -41,6 +48,8 @@ func RenderBucketListing(buckets []BucketWithDisplay) {
 		}
 	})
 
+	// down goes sideways
+
 	termui.Handle("/sys/kbd/<down>", func(termui.Event) {
 		if selection == len(buckets)-1 {
 			return
@@ -52,6 +61,8 @@ func RenderBucketListing(buckets []BucketWithDisplay) {
 		}
 	})
 
+	// enter loads the bucket
+
 	termui.Handle("/sys/kbd/<enter>", func(termui.Event) {
 		termui.ResetHandlers()
 		p := RenderMessage("Loading Bucket", buckets[selection].displayString)
@@ -62,11 +73,17 @@ func RenderBucketListing(buckets []BucketWithDisplay) {
 }
 
 func ReloadMainBucketsWithError(err error) {
+
+	// Render an error to the screen and reload the bucket listing
+
 	RenderError(err.Error())
 	ReloadMainBuckets()
 }
 
 func ReloadMainBuckets() {
+
+	// Retrieve a fresh bucket listing and reload main screen
+
 	termui.ResetHandlers()
 	SetDefaultHandlers(func() { return })
 	termui.Clear()

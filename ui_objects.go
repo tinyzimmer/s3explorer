@@ -21,13 +21,43 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gizak/termui"
 )
 
+func RunUi() {
+
+	// Init the termina UI
+
+	err := termui.Init()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(EXIT_FAILED_NO_TERMINAL)
+	}
+	defer termui.Close()
+
+	// Get an initial bucket listing
+
+	buckets, err := s3Session.GetBucketWithDisplayStrings()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		os.Exit(EXIT_FAILED_BUCKET_LISTING)
+	}
+
+	// Set the exit handler and load the main buckets screen
+
+	SetDefaultHandlers(func() { return })
+	RenderBucketListing(buckets)
+	termui.Loop()
+}
+
 func HaveTermSpace(maxHeight int) bool {
+
+	// Determine if we have terminal space to render the desired objets height
+
 	if maxHeight < 2 {
 		log.Println("Warning: Terminal height is too small!")
 		return false
@@ -36,6 +66,9 @@ func HaveTermSpace(maxHeight int) bool {
 }
 
 func GetNodeListHeight(nodes []*Node) int {
+
+	// Get the height available to list a section of nodes
+
 	max := termui.TermHeight() - LOWER_BUFFER
 	if (len(nodes) + 2) < max {
 		return (len(nodes) + 2)
@@ -44,6 +77,9 @@ func GetNodeListHeight(nodes []*Node) int {
 }
 
 func GetBucketListHeight(buckets []BucketWithDisplay) int {
+
+	// Get the height available to list a section of buckets
+
 	max := termui.TermHeight() - LOWER_BUFFER
 	if (len(buckets) + 2) < max {
 		return (len(buckets) + 2)
@@ -52,6 +88,9 @@ func GetBucketListHeight(buckets []BucketWithDisplay) int {
 }
 
 func GetStringListHeight(strings []string) int {
+
+	// Get the height available to list a section of strings
+
 	max := termui.TermHeight() - LOWER_BUFFER
 	if (len(strings) + 2) < max {
 		return (len(strings) + 2)
@@ -60,6 +99,9 @@ func GetStringListHeight(strings []string) int {
 }
 
 func RenderHelp() (p *termui.Par) {
+
+	// Create a par for the default help window
+
 	arrows := "\u2195\ufe0f"
 	returnArrow := "\u21b2"
 	helpText := fmt.Sprintf("%v navigate - %v open - <q> quit - <b> back", arrows, returnArrow)
@@ -74,6 +116,9 @@ func RenderHelp() (p *termui.Par) {
 }
 
 func RenderMessage(label string, message string) (p *termui.Par) {
+
+	// Create a par for a generic message
+
 	p = termui.NewPar(message)
 	p.Height = 3
 	p.Width = termui.TermWidth() - RIGHT_BUFFER
@@ -84,6 +129,9 @@ func RenderMessage(label string, message string) (p *termui.Par) {
 }
 
 func RenderError(errorMessage string) {
+
+	// Create and immediately render an error
+
 	p := termui.NewPar(errorMessage)
 	p.Height = 3
 	p.Width = termui.TermWidth() - RIGHT_BUFFER
@@ -95,6 +143,9 @@ func RenderError(errorMessage string) {
 }
 
 func CreateDownloadPrompt(dest string) (p *termui.Par) {
+
+	// Create a download prompt
+
 	msg := fmt.Sprintf("Downloading to %s", dest)
 	p = termui.NewPar(msg)
 	p.Height = 5
@@ -106,6 +157,9 @@ func CreateDownloadPrompt(dest string) (p *termui.Par) {
 }
 
 func CreateFinishedDownloadPrompt(dest string) (p *termui.Par) {
+
+	// Create a finished download prompt
+
 	msg := fmt.Sprintf("File Downloaded: %s", dest)
 	p = termui.NewPar(msg)
 	p.Height = 5
@@ -118,17 +172,23 @@ func CreateFinishedDownloadPrompt(dest string) (p *termui.Par) {
 
 func CreateBucketList(buckets []BucketWithDisplay, selection int) *termui.List {
 
+	// Create a list of buckets
+
 	var displayStrings []string
 
+	// Figure the display strings
 	for _, bucket := range buckets {
 		displayStrings = append(displayStrings, bucket.displayString)
 	}
 
+	// Get the list to render
 	listing, err := GetDirectoryDisplayListing(displayStrings, selection)
 	if err != nil {
 		RenderError(err.Error())
 		return &termui.List{}
 	}
+
+	// create the list
 
 	ls := termui.NewList()
 	ls.Items = listing
@@ -141,6 +201,9 @@ func CreateBucketList(buckets []BucketWithDisplay, selection int) *termui.List {
 }
 
 func TruncateFilename(filename string) (truncated string, space int) {
+
+	// truncate a filename and determine space until size
+
 	if len(filename) >= termui.TermWidth()/4 {
 		truncated = fmt.Sprintf("%s...", filename[:(termui.TermWidth()/4)-3])
 	} else {
@@ -151,6 +214,9 @@ func TruncateFilename(filename string) (truncated string, space int) {
 }
 
 func GetDirectoryDisplayListing(objects []string, selection int) (listing []string, err error) {
+
+	// hilight the currently selected entry
+
 	var index int
 	index = 0
 	for _, obj := range objects {
@@ -162,14 +228,18 @@ func GetDirectoryDisplayListing(objects []string, selection int) (listing []stri
 		index += 1
 	}
 
+	// Find the height needed for the object
+
 	maxHeight := GetStringListHeight(objects)
 
+	// If not enough height available, render error
 	if !HaveTermSpace(maxHeight) {
 		err = errors.New("Please expand the height of your terminal")
 		log.Println(err)
 		return
 	}
 
+	// Otherwise return a scope around the currently selected node
 	if len(listing) > 0 {
 		if maxHeight <= (selection + 2) {
 			listing = listing[(selection - 2):]

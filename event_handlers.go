@@ -25,10 +25,16 @@ import (
 )
 
 func SetDefaultHandlers(exitFunc func()) {
+
+	// Always set "q" to exit with any relevant deferred functions
+
 	SetExitHandler(exitFunc)
 }
 
 func SetExitHandler(exitFunc func()) {
+
+	// Run a prepared function and exit the program
+
 	termui.Handle("/sys/kbd/q", func(termui.Event) {
 		log.Println("Received User Requested Exit")
 		log.Println("Running extra handlers")
@@ -40,6 +46,9 @@ func SetExitHandler(exitFunc func()) {
 }
 
 func SetBackHandler(runFuncs ...func()) {
+
+	// Set the back handler to a prepared function
+
 	termui.Handle("/sys/kbd/b", func(termui.Event) {
 		log.Println("Received <back> request, running handlers")
 		for _, runFunc := range runFuncs {
